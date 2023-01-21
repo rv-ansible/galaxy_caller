@@ -1,0 +1,13 @@
+Hostname, APP,"OS
+Release","Kernel
+Version",Ansible,"Baseline
+Update",Manufacturer,"VM
+Version",Software,"HBA
+Firmware","NIC
+Card","NIC
+Driver::Version::Firmware","ILO
+Firmware"
+docker,DOCK,,3.10.0-1160.81.1.el7,ansible 2.9.27,,VMware Inc,,"
+",,"
+","
+",
