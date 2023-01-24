@@ -1,0 +1,101 @@
+---
+
+- name: Get disk info and mail it 
+  hosts: all 
+  any_errors_fatal: True
+  vars:
+    tmp_folder: /tmp/ambari_tmp                    
+    datestamp: "{{lookup('pipe','date +%Y%m%d')}}"
+    send_mail: false
+    letters:   # extra-vars or survey
+  roles: 
+    - { role: tps_disk, get_raw_disk_prefix: true, become: true, include_mpath: false }
+    - { role: tps_mail_logs, create_log: true, lines: true } 
+    - { role: tps_disk, get_raw_disk: true, become: true }
+    - { role: tps_mail_logs, mail: true } 
+    - { role: common, add_email: true }  
+  tags: get_raw_disk    
+  
+- name: Create inventory
+  hosts: all 
+  vars:
+    tmp_folder: /tmp/ambari_tmp                    
+    datestamp: "{{lookup('pipe','date +%Y%m%d')}}"
+    letters:     # extra-vars or survey
+    skip_disks:   # extra-vars or survey ex server1sdb or edit the extra-vars
+  roles: 
+    - { role: tps_disk, get_raw_disk_prefix: true, become: true, include_mpath: false }
+    - { role: tps_mail_logs, create_log: true, lines: false } 
+    - { role: tps_disk, create_inventory: true, become: true }
+    - { role: tps_mail_logs, mail: true, send_mail: false } 
+    #- { role: common, mv_email: true } # use the email inventory instead
+  tags: create_inventory    
+    
+- name: Create partition   
+  hosts: all
+  become: true
+  any_errors_fatal: True
+  #disk_items:              # extra variables
+  tasks:
+    - name: Loop over role
+      include_role:
+       name: tps_disk
+      vars:
+        disk_process: DPVLFM   # D=create raw disk P=physical volume V=volumegroup L=logicalvolume F=filesystem M=mount
+        create_partition_nolog: true
+        server: "{{ item.server0 }}"
+        disk1:  "{{ item.disk0 }}"
+        pvname: "{{ item.disk0 }}"
+        fsname: "{{ item.fsname0 }}"
+        vgname: "{{ item.vgname0 }}"
+        lvname: "{{ item.lvname0 }}"
+        size: "{{ item.size0 }}"
+      with_items: 
+         - "{{disk_items}}"
+  tags: create_partition
+
+- name: Remove partition   
+  hosts: all
+  become: true
+  any_errors_fatal: True
+  #disk_items:              # extra variables
+  tasks:
+    - name: Loop over role
+      include_role:
+       name: tps_disk
+      vars:
+        disk_process: DPVLFM
+        force: yes
+        remove_partition_nolog: true
+        server: "{{ item.server0 }}"
+        disk1:  "{{ item.disk0 }}"
+        pvname: "{{ item.disk0 }}"
+        fsname: "{{ item.fsname0 }}"
+        vgname: "{{ item.vgname0 }}"
+        lvname: "{{ item.lvname0 }}" # size is not needed
+      with_items: 
+         - "{{disk_items}}"
+  tags: remove_partition
+  
+- name: Resize Disk (logical)  
+  hosts: all
+  become: true
+  any_errors_fatal: True
+  #disk_items:              # extra variables
+  tasks:
+    - name: Loop over role
+      include_role:
+       name: tps_disk
+      vars:
+        resize_logical: true
+        server: "{{ item.server0 }}"
+        disk1:  "{{ item.disk0 }}"
+        pvname: "{{ item.disk0 }}"
+        fsname: "{{ item.fsname0 }}"
+        vgname: "{{ item.vgname0 }}"
+        lvname: "{{ item.lvname0 }}"
+        size: "{{ item.size0 }}"
+      with_items: 
+         - "{{disk_items}}"
+  tags: resize_disk  
+  

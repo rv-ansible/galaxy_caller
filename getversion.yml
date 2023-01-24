@@ -1,0 +1,26 @@
+---
+
+# Please READ the README.md first.
+
+- name: Create the logs
+  hosts: all
+  roles:
+    - { role: tps_mail_logs, create_log: true, lines: false }  
+  tags: 
+    - create_logs
+    - get_version  
+
+- name: Get Version
+  hosts: all
+  roles:
+    - { role: getversion, get_version: true }    
+  tags: 
+    - get_version
+    
+- name: Email the logs
+  hosts: all
+  roles:
+    - { role: tps_mail_logs, mail: true, filename1: getversion }  
+  tags: 
+    - email_logs
+    - get_version    

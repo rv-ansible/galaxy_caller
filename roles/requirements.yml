@@ -1,0 +1,25 @@
+---
+
+- name: tps_mail_logs
+  src: https://github.domaingc.net/scm/dev/tps_mail_logs.git
+  scm: git
+  version: origin/development
+  #when: getversion|default(False)==True
+
+- name: getversion
+  src: https://github.domaingc.net/scm/dev/getversion.git
+  scm: git
+  version: origin/development
+  
+- name: tps_disk
+  src: https://github.domaingc.net/scm/dev/tps_disk.git
+  scm: git
+  
+- name: tps_yum_repo
+  src: https://github.domaingc.net/scm/dev/tps_yum_repo.git
+  scm: git
+  
+- name: tps_artifactory
+  src: https://github.domaingc.net/scm/dev/tps_artifactory.git
+  scm: git  
+  

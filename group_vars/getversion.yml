@@ -1,0 +1,14 @@
+---
+
+send_mail: false # extra vars or tower survey  
+email_subject: # extra vars or tower survey
+email_body: "See the attachment email.csv to see the results of this run."    
+email_group: # extra vars or tower survey
+smtp_server: # extra vars or tower survey
+email_to: # extra vars or tower survey
+
+filename1: getversion
+ext: csv
+tmp_folder: /tmp/get_version
+tmp_prefix: '{{tmp_folder}}/gv_'
+log_file_mail: "{{tmp_folder}}/mail_{{inventory_hostname}}_{{lookup('pipe','date +%Y%m%d-%H%M')}}.{{ext}}" 

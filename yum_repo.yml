@@ -1,0 +1,50 @@
+---
+
+- name: Download ambari yum
+  hosts: master # master
+  become: true
+  any_errors_fatal: True  
+  vars:
+    repo_path: /systemfiles/repo/ # end with /
+    httpd_path:  /var/www/html/
+    artifactory_url: "https://artifactory-qa.domaingc.net/artifactory/EWP/common/ambari-repo/"
+    artifactory_token: 'AKCp5ccbEMh6SonsqdP5qYQ5a2WDKNbem8wtLhiogiszieD9MnxHdQU83oqfoVCJpwFoQUJhb'
+    artifacts_dest: "{{repo_path}}"
+    create_dest: true
+    owner_folder: root
+    group_folder: root
+    mode_folder: 0755
+    owner_file: root
+    group_file: root
+    mode_file: 0755
+    artifactslist:
+       - ambari-2.7.4.0-centos7.tar.gz
+       - HDP-3.1.4.0-centos7-rpm.tar.gz
+       - HDP-UTILS-1.1.0.22-centos7.tar.gz
+    repopathlist:
+      - '{{repo_path}}ambari'
+      - '{{repo_path}}HDP'
+      - '{{repo_path}}HDP-UTILS'
+    rhel_7_master:  
+      - createrepo
+      - httpd
+  roles:
+    - { role: tps_artifactory, download: true, artifacts: "{{artifactslist[0]}}", extract: true, deleteartifact: true }
+    - { role: tps_artifactory, download: true, artifacts: "{{artifactslist[1]}}", extract: true, deleteartifact: true }
+    - { role: tps_artifactory, download: true, artifacts: "{{artifactslist[2]}}", extract: true, deleteartifact: true }
+    - { role: tps_yum_repo , yum_master: true }
+    - { role: tps_yum_repo , createrepo: true }
+  tags: ambari_yum 
+
+- name: Copy ambari yum to all
+  hosts: all
+  become: true
+  any_errors_fatal: True  
+  vars:
+    hostrepo: "{{groups['master'][0]}}" 
+    repopriority: 1
+  roles:
+    - { role: tps_yum_repo, copyrepo: true, repofile: ambari.repo, repoversion: ambari-2.7.4.0, reponame: 'ambari Version - ambari-2.7.4.0', repopath: /repo/amabari, repo_path_file: '' }
+    - { role: tps_yum_repo, copyrepo: true, repofile: ambari-hdp.repo, repoversion: HDP-3.1-repo-1,reponame: HDP-3.1-repo-1, repopath: /repo/HDP, repo_path_file: / }
+    - { role: tps_yum_repo, copyrepo: true, repofile: ambari-hdp-util.repo, repoversion: HDP-UTILS-1.1.0.22-repo-1, reponame: HDP-UTILS-1.1.0.22-repo-1, repopath: /repo/HDP-UTILS, repo_path_file: / }
+  tags: ambari_yum
